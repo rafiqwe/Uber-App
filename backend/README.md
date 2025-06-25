@@ -471,3 +471,188 @@ This route is **public** — no token is required.
 
 ---
 
+# 🧑‍✈️ Captain Authentication API
+
+APIs to handle captain login, profile retrieval, and logout functionality.
+
+---
+
+## 🔐 POST `/captain/login`
+
+Authenticate a registered captain and return a JWT token.
+
+### ✅ Description
+
+This endpoint verifies captain credentials (email and password). If valid, it returns a JWT token and the captain’s profile. The token is also set in cookies.
+
+---
+
+### 📥 Request Body
+
+```json
+{
+  "email": "captain@example.com",
+  "password": "password123"
+}
+```
+
+### 📌 Field Requirements
+
+| Field     | Type   | Required | Validation                      |
+|-----------|--------|----------|----------------------------------|
+| email     | string | ✅ Yes   | Must be a valid email format     |
+| password  | string | ✅ Yes   | Minimum 6 characters             |
+
+---
+
+### 📤 Success Response – 200 OK
+
+```json
+{
+  "token": "jwt_token_here",
+  "captain": {
+    "_id": "captain_id",
+    "fullname": {
+      "firstname": "John",
+      "lastname": "Smith"
+    },
+    "email": "captain@example.com",
+    "vehicle": {
+      "color": "Blue",
+      "plate": "XYZ-5678",
+      "capacity": 3,
+      "vehicleType": "car"
+    },
+    "status": "inactive"
+  }
+}
+```
+
+---
+
+### ❌ Error Responses
+
+#### 400 – Validation Errors
+
+```json
+{
+  "errors": [
+    {
+      "msg": "Invalid Email",
+      "param": "email",
+      "location": "body"
+    }
+  ]
+}
+```
+
+#### 401 – Invalid Credentials
+
+```json
+{
+  "message": "Invalid email or password"
+}
+```
+
+---
+
+## 👤 GET `/captain/profile`
+
+Returns the profile of the currently authenticated captain.
+
+### 🔐 Authentication Required
+
+JWT token must be provided in either:
+- Cookie: `token`
+- Header: `Authorization: Bearer <token>`
+
+---
+
+### 📤 Success Response – 200 OK
+
+```json
+{
+  "captain": {
+    "_id": "captain_id",
+    "fullname": {
+      "firstname": "John",
+      "lastname": "Smith"
+    },
+    "email": "captain@example.com",
+    "vehicle": {
+      "color": "Blue",
+      "plate": "XYZ-5678",
+      "capacity": 3,
+      "vehicleType": "car"
+    },
+    "status": "inactive"
+  }
+}
+```
+
+---
+
+### ❌ Error Responses
+
+#### 401 – No Token / Invalid Token / Not Found
+
+```json
+{
+  "message": "Unauthorized: No token provided"
+}
+```
+
+```json
+{
+  "message": "Unauthorized: captain not found"
+}
+```
+
+---
+
+## 🔓 GET `/captain/logout`
+
+Logs out the captain by clearing the token and blacklisting it.
+
+---
+
+### 🔐 Authentication Required
+
+Must include the JWT token in either cookies or `Authorization` header.
+
+---
+
+### 📤 Success Response – 200 OK
+
+```json
+{
+  "message": "Logout successfully"
+}
+```
+
+---
+
+### ❌ Error Response – 500
+
+```json
+{
+  "message": "Internal Server Error"
+}
+```
+
+---
+
+## ⚠️ Token Blacklisting
+
+- When a captain logs out, their JWT token is saved in a blacklist.
+- Any further use of a blacklisted token will result in unauthorized access (`401`).
+
+---
+
+## 🧠 Notes
+
+- Passwords are not returned thanks to `select: false` in the model.
+- Tokens expire after `24h`.
+- `authCaptain` middleware validates and attaches the authenticated captain to `req.captain`.
+
+---
