@@ -199,3 +199,136 @@ No token required — public route.
 - The password field is excluded in the final response.
 
 ---
+
+
+---
+
+## 🔒 GET `/users/profile`
+
+Fetch the authenticated user's profile information.
+
+### ✅ Description
+
+This endpoint returns the currently logged-in user's data. It requires a valid JWT token, which should be sent via `Cookie` or `Authorization` header.
+
+---
+
+### 📤 Response
+
+#### ✅ 200 OK
+
+```json
+{
+  "_id": "user_id",
+  "fullname": {
+    "firstname": "John",
+    "lastname": "Doe"
+  },
+  "email": "john@example.com"
+}
+```
+
+---
+
+### ❌ 401 Unauthorized
+
+```json
+{
+  "message": "Unauthorized: No token provided"
+}
+```
+
+or
+
+```json
+{
+  "message": "Unauthorized: Invalid token"
+}
+```
+
+---
+
+### 🔐 Authorization
+
+- ✅ Requires a valid JWT token via:
+  - Cookie: `token=<JWT>`
+  - OR Header: `Authorization: Bearer <JWT>`
+
+---
+
+## 🚪 POST `/users/logout`
+
+Logs out the authenticated user by clearing the cookie and blacklisting the token.
+
+### ✅ Description
+
+This endpoint clears the authentication token from cookies and prevents future use by blacklisting it. Useful for safely logging users out.
+
+---
+
+### 📤 Response
+
+#### ✅ 200 OK
+
+```json
+{
+  "message": "Logged Out"
+}
+```
+
+---
+
+### ❌ 500 Internal Server Error
+
+```json
+{
+  "message": "Internal Server Error"
+}
+```
+
+---
+
+### 🔐 Authorization
+
+- ✅ Requires a valid JWT token via:
+  - Cookie: `token=<JWT>`
+  - OR Header: `Authorization: Bearer <JWT>`
+
+---
+
+## 🛡️ BlacklistToken Model
+
+This model is used to **store and manage blacklisted JWT tokens** after a user logs out. It prevents the reuse of invalidated tokens and enhances the security of your authentication system.
+
+---
+
+### 🔍 Schema Fields
+
+| Field       | Type   | Required | Description                                              |
+|-------------|--------|----------|----------------------------------------------------------|
+| `token`     | String | ✅ Yes   | The JWT token to be blacklisted. Must be unique.         |
+| `createdAt` | Date   | ❌ No    | Automatically set to current time. Used for TTL expiry.  |
+
+---
+
+### ⏳ Expiry
+
+- The `expires` option in the `createdAt` field ensures **MongoDB automatically deletes** the token document **24 hours after insertion**.
+- This helps keep your database clean and removes stale blacklisted tokens automatically.
+
+---
+
+### 💡 Why Use This?
+
+- Prevents reuse of old JWT tokens after logout.
+- Helps enforce **stateless** session invalidation.
+- Automatically expires old tokens using MongoDB TTL.
+
+---
+
+### 🧪 Notes
+
+- Blacklisted tokens are stored to prevent reuse.
+- If the user tries to access protected routes after logout, they will receive a `401 Unauthorized`.
+
+---
