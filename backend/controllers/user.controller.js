@@ -1,21 +1,24 @@
 const userModel = require("../models/user.model");
 const userService = require("../services/user.service");
 const { validationResult } = require("express-validator");
+const blackListToken = require("../models/blacklistToken.model");
 
 module.exports.registerUser = async (req, res, next) => {
   try {
     const errors = validationResult(req);
-
     if (!errors.isEmpty()) {
       return res.status(400).json({ errors: errors.array() });
     }
 
     const { fullname, email, password } = req.body;
 
-    // Hash password
+    const existingUser = await userModel.findOne({ email });
+    if (existingUser) {
+      return res.status(409).json({ message: "User already exists" });
+    }
+
     const hashPassword = await userModel.hashPassword(password);
 
-    // Create user
     const user = await userService.createUser({
       firstname: fullname.firstname,
       lastname: fullname.lastname,
@@ -23,9 +26,8 @@ module.exports.registerUser = async (req, res, next) => {
       password: hashPassword,
     });
 
-    // Generate token
     const token = user.generateAuthToken();
-    res.cookie("token", token);
+    res.cookie("token", token, { httpOnly: true });
 
     res.status(201).json({ token, user });
   } catch (err) {
@@ -44,23 +46,19 @@ module.exports.loginUser = async (req, res, next) => {
     const { email, password } = req.body;
 
     const user = await userModel.findOne({ email }).select("+password");
-
     if (!user) {
       return res.status(401).json({ message: "Invalid email or password" });
     }
 
-    const isMatch = await user.comparePassword(password); // ✅ Fixed
-
+    const isMatch = await user.comparePassword(password);
     if (!isMatch) {
       return res.status(401).json({ message: "Invalid email or password" });
     }
 
-    const token = user.generateAuthToken(); // ✅ Fixed
+    const token = user.generateAuthToken();
+    res.cookie("token", token, { httpOnly: true });
 
-    res.cookie("token", token);
-    // Optional: exclude password from response
     user.password = undefined;
-
     res.status(200).json({ token, user });
   } catch (err) {
     console.error("Login error:", err);
@@ -68,7 +66,23 @@ module.exports.loginUser = async (req, res, next) => {
   }
 };
 
-module.exports.getUserProfile = async (req, res, next) => {
-  const user = req.user;
-  res.send(user);
+module.exports.getUserProfile = async (req, res) => {
+  res.status(200).json(req.user);
+};
+
+module.exports.logoutUser = async (req, res) => {
+  try {
+    const token =
+      req.cookies?.token || req.headers?.authorization?.split(" ")[1];
+
+    if (token) {
+      await blackListToken.create({ token });
+    }
+
+    res.clearCookie("token");
+    res.status(200).json({ message: "Logged Out" });
+  } catch (err) {
+    console.error("Logout error:", err);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
 };
