@@ -8,15 +8,26 @@ module.exports.auth = async (req, res, next) => {
       req.cookies?.token || req.headers?.authorization?.split(" ")[1];
 
     if (!token) {
-      return res.status(401).json({ message: "Unauthorized: No token provided" });
+      return res
+        .status(401)
+        .json({ message: "Unauthorized: No token provided" });
+    }
+
+    const isBlackList = await userModel.findOne({ token });
+
+    if (isBlackList) {
+      return res
+        .status(401)
+        .json({ message: "Unauthorized: No token provided" });
     }
 
     // Verify token
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
+    console.log(decoded);
     // Find user by ID
     const user = await userModel.findById(decoded._id);
-
+      
     if (!user) {
       return res.status(401).json({ message: "Unauthorized: User not found" });
     }
