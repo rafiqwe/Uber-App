@@ -408,6 +408,7 @@ Submit a JSON object:
       "lastname": "Smith"
     },
     "email": "johnsmith@example.com",
+    "password": "$2b$10$RSrM8ENvOffZxSb1eA7AyuneFJi3oiVF7XR9BrvB.YHertqPvl4WO",
     "vehicle": {
       "color": "Blue",
       "plate": "XYZ-5678",
