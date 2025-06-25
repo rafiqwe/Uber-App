@@ -25,6 +25,7 @@ module.exports.registerUser = async (req, res, next) => {
 
     // Generate token
     const token = user.generateAuthToken();
+    res.cookie("token", token);
 
     res.status(201).json({ token, user });
   } catch (err) {
@@ -48,7 +49,7 @@ module.exports.loginUser = async (req, res, next) => {
       return res.status(401).json({ message: "Invalid email or password" });
     }
 
-    const isMatch = await user.comparePassword( password); // ✅ Fixed
+    const isMatch = await user.comparePassword(password); // ✅ Fixed
 
     if (!isMatch) {
       return res.status(401).json({ message: "Invalid email or password" });
@@ -56,6 +57,7 @@ module.exports.loginUser = async (req, res, next) => {
 
     const token = user.generateAuthToken(); // ✅ Fixed
 
+    res.cookie("token", token);
     // Optional: exclude password from response
     user.password = undefined;
 
@@ -64,4 +66,9 @@ module.exports.loginUser = async (req, res, next) => {
     console.error("Login error:", err);
     res.status(500).json({ message: "Internal Server Error" });
   }
+};
+
+module.exports.getUserProfile = async (req, res, next) => {
+  const user = req.user;
+  res.send(user);
 };
