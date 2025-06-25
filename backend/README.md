@@ -332,3 +332,141 @@ This model is used to **store and manage blacklisted JWT tokens** after a user l
 - If the user tries to access protected routes after logout, they will receive a `401 Unauthorized`.
 
 ---
+
+# 🧑‍✈️ POST `/captain/register`
+
+Registers a new **Captain** (driver) with personal details and vehicle information.
+
+---
+
+## ✅ Description
+
+This endpoint allows captains (drivers) to register by submitting their full name, email, password, and vehicle details. It performs validation, hashes the password securely, and returns a JWT token along with the newly created captain profile.
+
+---
+
+## 📥 Request Body
+
+Submit a JSON object:
+
+```json
+{
+  "fullname": {
+    "firstname": "John",
+    "lastname": "Smith"
+  },
+  "email": "johnsmith@example.com",
+  "password": "strongpass123",
+  "vehicle": {
+    "color": "Blue",
+    "plate": "XYZ-5678",
+    "capacity": 3,
+    "vehicleType": "car"
+  }
+}
+```
+
+---
+
+## 📌 Field Requirements
+
+| Field                  | Type     | Required | Validation Details                                         |
+|-----------------------|----------|----------|------------------------------------------------------------|
+| fullname.firstname    | string   | ✅ Yes   | Minimum 3 characters                                       |
+| fullname.lastname     | string   | ➖ Optional | Minimum 3 characters (optional but validated if present)   |
+| email                 | string   | ✅ Yes   | Must be valid email format                                 |
+| password              | string   | ✅ Yes   | Minimum 6 characters                                       |
+| vehicle.color         | string   | ✅ Yes   | Minimum 3 characters                                       |
+| vehicle.plate         | string   | ✅ Yes   | Minimum 3 characters                                       |
+| vehicle.capacity      | integer  | ✅ Yes   | Must be at least 1                                         |
+| vehicle.vehicleType   | string   | ✅ Yes   | One of: `"car"`, `"motorcycle"`, `"auto"`                  |
+
+---
+
+## 🛠 Internal Logic Summary
+
+- Checks if a captain already exists using email.
+- Validates all fields using `express-validator`.
+- Password is hashed using `bcrypt`.
+- A new captain is created using a service layer.
+- JWT is generated using the captain’s `_id`.
+- Token is returned along with the captain data.
+
+---
+
+## 📤 Success Response
+
+### ✅ 201 Created
+
+```json
+{
+  "token": "jwt_token_here",
+  "captain": {
+    "_id": "unique_captain_id",
+    "fullname": {
+      "firstname": "John",
+      "lastname": "Smith"
+    },
+    "email": "johnsmith@example.com",
+    "vehicle": {
+      "color": "Blue",
+      "plate": "XYZ-5678",
+      "capacity": 3,
+      "vehicleType": "car"
+    },
+    "status": "inactive"
+  }
+}
+```
+
+---
+
+## ❌ Error Responses
+
+### 🔴 400 Bad Request (Validation Errors)
+
+```json
+{
+  "errors": [
+    {
+      "msg": "First name must be at least 3 characters long",
+      "param": "fullname.firstname",
+      "location": "body"
+    }
+  ]
+}
+```
+
+### 🔴 409 Conflict (Captain Already Exists)
+
+```json
+{
+  "message": "Captain already exists"
+}
+```
+
+### 🔴 500 Internal Server Error
+
+```json
+{
+  "message": "Internal Server Error"
+}
+```
+
+---
+
+## 🔐 Authorization
+
+This route is **public** — no token is required.
+
+---
+
+## 🧪 Notes
+
+- Passwords are not returned in the response due to `select: false` in the schema.
+- Use the returned token for authentication in protected captain routes.
+- Vehicle info is nested under `vehicle` in the captain model.
+- The `status` defaults to `"inactive"` and can be updated later based on app logic.
+
+---
+
