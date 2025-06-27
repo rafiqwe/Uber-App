@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import axios from "axios";
 
 const UserRegister = () => {
   const [formData, setFormData] = useState({
@@ -15,10 +16,39 @@ const UserRegister = () => {
       [e.target.name]: e.target.value,
     }));
   };
+  const navigate = useNavigate();
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("Signup Data:", formData);
+
+    const newUser = {
+      fullname: {
+        firstname: formData.firstname,
+        lastname: formData.lastname,
+      },
+      email: formData.email,
+      password: formData.password,
+    };
+
+    const response = await axios.post(
+      `${import.meta.env.VITE_BASE_URL}/users/register`,
+      newUser
+    );
+
+    // console.log("Signup Data:", newUser, response);
+
+    if (response.status === 201) {
+      const data = response.data;
+      localStorage.setItem("token", data.token);
+      navigate("/home");
+    }
+
+    setFormData({
+      firstname: "",
+      lastname: "",
+      email: "",
+      password: "",
+    });
     // You can plug in your backend API here
   };
 
@@ -33,7 +63,6 @@ const UserRegister = () => {
             className="h-8 sm:h-10"
           />
         </div>
-
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
@@ -100,7 +129,7 @@ const UserRegister = () => {
             type="submit"
             className="w-full bg-black text-white py-2 rounded-md hover:bg-gray-900 transition"
           >
-            Sign Up
+            Create Account
           </button>
         </form>
 
@@ -113,7 +142,9 @@ const UserRegister = () => {
 
         <div className="mt-5">
           <p className="text-[11px] text-gray-400">
-            By proceeding,you consent to get calls, WhatsApp or SMS messages,incloding by automated means,from Uber and its affiliates to the number provided.
+            By proceeding,you consent to get calls, WhatsApp or SMS
+            messages,incloding by automated means,from Uber and its affiliates
+            to the number provided.
           </p>
         </div>
       </div>
