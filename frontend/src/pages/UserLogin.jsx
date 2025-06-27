@@ -1,11 +1,14 @@
+import axios from "axios";
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 const UserLogin = () => {
   const [formData, setFormData] = useState({
     email: "",
     password: "",
   });
+
+  const navigate = useNavigate();
 
   const handleChange = (e) => {
     setFormData((prev) => ({
@@ -14,14 +17,25 @@ const UserLogin = () => {
     }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     console.log("Submitted:", formData);
+
+    const response = await axios.post(
+      `${import.meta.env.VITE_BASE_URL}/users/login`,
+      formData
+    );
+
+    if (response.status === 200) {
+      const data = response.data;
+      localStorage.setItem("token", data.token);
+      navigate("/home");
+    }
+
     setFormData({
       email: "",
       password: "",
     });
-    // you can connect API call here
   };
 
   return (
