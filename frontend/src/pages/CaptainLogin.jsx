@@ -1,12 +1,13 @@
+import axios from "axios";
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 const CaptainLogin = () => {
   const [formData, setFormData] = useState({
     email: "",
     password: "",
   });
-
+  const navigate = useNavigate();
   const handleChange = (e) => {
     setFormData((prev) => ({
       ...prev,
@@ -14,14 +15,25 @@ const CaptainLogin = () => {
     }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("Submitted:", formData);
+    // you can connect API call here
+
+    const response = await axios.post(
+      `${import.meta.env.VITE_BASE_URL}/captain/login`,
+      formData
+    );
+
+    if (response.status === 200) {
+      const data = response.data;
+      localStorage.setItem("token", data.token);
+      navigate("/captain-home");
+    }
+
     setFormData({
       email: "",
       password: "",
     });
-    // you can connect API call here
   };
 
   return (
