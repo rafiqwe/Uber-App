@@ -56,6 +56,9 @@ const captainSchema = mongoose.Schema({
       enum: ["car", "motorcycle", "auto"],
     },
   },
+  socketId: {
+    type: String,
+  },
   location: {
     lat: Number,
     lng: Number,
