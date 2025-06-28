@@ -11,6 +11,7 @@ import UserLogOut from "./pages/UserLogOut";
 import CaptainHome from "./pages/CaptainHome";
 import CaptainProtectedWraper from "./pages/CaptainProtectedWraper";
 import CaptainLogout from "./pages/CaptainLogout";
+import Riding from "./pages/Riding";
 const App = () => {
   const router = createBrowserRouter([
     {
@@ -22,6 +23,14 @@ const App = () => {
       element: (
         <UserProtectedWraper>
           <Home />
+        </UserProtectedWraper>
+      ),
+    },
+    {
+      path: "/riding",
+      element: (
+        <UserProtectedWraper>
+          <Riding />
         </UserProtectedWraper>
       ),
     },
