@@ -65,7 +65,6 @@ module.exports.authCaptain = async (req, res, next) => {
     // Verify token
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-    console.log(decoded);
     // Find user by ID
     const captain = await captainModel.findById(decoded._id);
 
