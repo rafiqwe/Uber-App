@@ -1,24 +1,31 @@
-import React from "react";
+import React, { useState } from "react";
 import { FaAngleDown, FaLocationDot, FaMapLocationDot } from "react-icons/fa6";
+import { Link } from "react-router-dom";
 
 const CaptainConfirmRidePopup = ({
   setridePopupPanel,
   setConfirmRidePopupPanel,
 }) => {
+  const [otp, setOtp] = useState();
+  const handleSubit = (e) => {
+    e.preventDefault();
+    console.log("user otp ", otp);
+    
+  };
   return (
     <div>
       <div className="absolute top-7 right-5">
         <FaAngleDown
           onClick={() => {
             setridePopupPanel(false);
-            setConfirmRidePopupPanel(false)
+            setConfirmRidePopupPanel(false);
           }}
           className="text-lg"
         />
       </div>
-      <h1 className="text-2xl font-bold mb-5">New Ride Avilvable! Confirm </h1>
+      <h1 className="text-2xl font-bold mb-5">Confirm this ride to start </h1>
 
-      <div className="flex items-center justify-between  mb-4 p-3 bg-yellow-500 rounded-lg">
+      <div className="flex items-center justify-between  mb-4 p-3 border-2 border-yellow-500 rounded-lg">
         <div className="flex items-center justify-start gap-3 ">
           <img
             className="w-13 h-13 border-2 border-slate-500 rounded-full object-cover"
@@ -57,17 +64,32 @@ const CaptainConfirmRidePopup = ({
             </div>
           </div>
         </div>
-        <button className="w-full py-2 mt-1 rounded-lg bg-green-600 text-lg font-semibold text-white">
-          Accept
-        </button>
-        <button
-          onClick={() => {
-            setridePopupPanel(false);
-          }}
-          className="w-full py-2 mt-1 rounded-lg bg-gray-300 text-lg font-semibold text-gray-700"
-        >
-          Igrone
-        </button>
+        <div className=" w-full">
+          <form onSubmit={handleSubit}>
+            <input
+              type="text"
+              value={otp}
+              onChange={(e) => setOtp(e.target.value)}
+              placeholder="Enter OTP"
+              className="px-7 font-mono py-3 outline-amber-300 rounded-lg text-lg bg-[#eee] my-2 w-full mb-8"
+            />
+            <Link
+              to={"/captain-riding"}
+              className="w-full flex justify-center items-center py-3  mt-1 rounded-lg bg-green-600 text-lg font-semibold text-white mb-3"
+            >
+              Confirm Ride
+            </Link>
+            <button
+              onClick={() => {
+                setridePopupPanel(false);
+                setConfirmRidePopupPanel(false);
+              }}
+              className="w-full py-3  mt-1 rounded-lg bg-red-500 text-lg font-semibold text-white"
+            >
+              Cancel Ride
+            </button>
+          </form>
+        </div>
       </div>
     </div>
   );
