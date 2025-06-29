@@ -53,23 +53,25 @@ const CaptainRidePopup = ({ setridePopupPanel, setConfirmRidePopupPanel }) => {
             </div>
           </div>
         </div>
-        <button
-          onClick={() => {
-            setConfirmRidePopupPanel(true);
-            setridePopupPanel(false);
-          }}
-          className="w-full py-2 mt-1 rounded-lg bg-green-600 text-lg font-semibold text-white"
-        >
-          Accept
-        </button>
-        <button
-          onClick={() => {
-            setridePopupPanel(false);
-          }}
-          className="w-full py-2 mt-1 rounded-lg bg-gray-300 text-lg font-semibold text-gray-700"
-        >
-          Igrone
-        </button>
+        <div className="flex items-center w-full justify-between gap-4 mt-2">
+          <button
+            onClick={() => {
+              setridePopupPanel(false);
+            }}
+            className="w-full  py-2 mt-1 rounded-lg bg-gray-300 text-lg font-semibold text-gray-700"
+          >
+            Igrone
+          </button>
+          <button
+            onClick={() => {
+              setConfirmRidePopupPanel(true);
+              setridePopupPanel(false);
+            }}
+            className="w-full py-2 rounded-lg bg-green-600 text-lg font-semibold text-white"
+          >
+            Accept
+          </button>
+        </div>
       </div>
     </div>
   );
