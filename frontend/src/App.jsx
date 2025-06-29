@@ -12,6 +12,7 @@ import CaptainHome from "./pages/CaptainHome";
 import CaptainProtectedWraper from "./pages/CaptainProtectedWraper";
 import CaptainLogout from "./pages/CaptainLogout";
 import Riding from "./pages/Riding";
+import CaptainRiding from "./pages/CaptainRiding";
 const App = () => {
   const router = createBrowserRouter([
     {
@@ -66,11 +67,19 @@ const App = () => {
         </CaptainProtectedWraper>
       ),
     },
+    {
+      path: "/captain-riding",
+      element: (
+        <CaptainProtectedWraper>
+          <CaptainRiding />
+        </CaptainProtectedWraper>
+      ),
+    },
   ]);
 
   return (
     <>
-      <div>
+      <div >
         <RouterProvider router={router} />
       </div>
     </>
