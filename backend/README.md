@@ -917,5 +917,107 @@ getOtp = (num) => crypto.randomInt(10**(num-1), 10**num).toString();
 
 ---
 
-**Developed for**: 🚖 Uber Clone Fullstack Project  
-**Maintained by**: MD Rabbi  
+
+
+# 💰 Get Fare Estimate API
+
+This endpoint allows authenticated users (riders or drivers) to estimate the ride fare before booking, based on pickup and destination locations and selected vehicle type.
+
+---
+
+## 🎯 Endpoint: `GET /ride/get-fare`
+
+Returns the calculated fare by using real-world distance and estimated duration via OpenRouteService.
+
+### 🔐 Authentication  
+✅ Required — user must be logged in
+
+---
+
+## 🧾 Query Parameters
+
+| Name           | Type   | Required | Description                                    |
+|----------------|--------|----------|------------------------------------------------|
+| `pickup`       | String | ✅ Yes   | Starting address (min 3 characters)            |
+| `destination`  | String | ✅ Yes   | Ending address (min 3 characters)              |
+| `vehicleType`  | String | ✅ Yes   | Must be one of: `auto`, `moto`, `car`          |
+
+---
+
+### 🧪 Example Request
+
+```
+GET /ride/get-fare?pickup=Uttara,+Dhaka&destination=Banani,+Dhaka&vehicleType=car
+Authorization: Bearer <token>
+```
+
+---
+
+## ✅ Success Response
+
+**Status**: `200 OK`
+
+```json
+{
+  "fare": "215.40"
+}
+```
+
+> The fare is dynamically calculated using OpenRouteService APIs with custom per-km and per-minute rates based on vehicle type.
+
+---
+
+## ❌ Error Responses
+
+| Status | Message                               |
+|--------|----------------------------------------|
+| 400    | Validation errors on query params     |
+| 500    | Internal server error or API failure  |
+
+---
+
+## ⚙️ Fare Calculation Logic
+
+Uses `mapsService` to:
+1. Convert addresses to coordinates
+2. Get distance (km) and duration (minutes) using OpenRouteService
+3. Apply rate based on vehicle type
+
+| Vehicle Type | Rate per KM | Rate per Min |
+|--------------|-------------|--------------|
+| `auto`       | 5           | 0.5          |
+| `moto`       | 4           | 0.4          |
+| `car`        | 10          | 1.0          |
+
+**Formula:**
+```ts
+fare = (distanceInKm * ratePerKm) + (durationInMin * ratePerMin)
+```
+
+---
+
+## 🔄 Sample Calculation
+
+```json
+{
+  "distance": "12.3 km",
+  "duration": "22.5 mins",
+  "vehicleType": "moto"
+}
+```
+
+```
+fare = (12.3 * 4) + (22.5 * 0.4) = 49.2 + 9.0 = 58.2
+```
+
+---
+
+## 🌐 External Dependencies
+
+- [OpenRouteService](https://openrouteservice.org/)
+- [Nominatim API](https://nominatim.org/) for geocoding
+
+---
+
+**Built With ❤️** for your Uber Clone App  
+**Maintainer**: MD Rabbi
