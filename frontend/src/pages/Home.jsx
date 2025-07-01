@@ -7,6 +7,7 @@ import VehiclePanel from "../components/VehiclePanel";
 import ConfirmRide from "../components/ConfirmRide";
 import LookingForDriver from "../components/LookingForDriver";
 import WaitingForDriver from "../components/WaitingForDriver";
+import axios from "axios"; // <-- Add axios import
 
 const Home = () => {
   const [formData, setFormData] = useState({
@@ -18,6 +19,10 @@ const Home = () => {
   const [confirmRide, setconfirmRide] = useState(false);
   const [vehileFound, setvehileFound] = useState(false);
   const [waitingForDriver, setwaitingForDriver] = useState(true);
+  const [suggestions, setSuggestions] = useState([]); // <-- Add suggestions state
+  const [activeField, setActiveField] = useState(""); // <-- Track which field is active
+  const [fare, setFare] = useState([]);
+
   const palenRef = useRef(null);
   const downIcon = useRef(null);
   const downIcon2 = useRef(null);
@@ -26,11 +31,52 @@ const Home = () => {
   const vehicleFundRef = useRef(null);
   const waitingForDriverRef = useRef(null);
 
+  // Fetch suggestions from backend
+  const fetchSuggestions = async (input) => {
+    if (!input || input.length < 3) {
+      setSuggestions([]);
+      return;
+    }
+    try {
+      const res = await axios.get(
+        `${
+          import.meta.env.VITE_BASE_URL
+        }/maps/get-suggestions?input=${encodeURIComponent(input)}`,
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
+      );
+      setSuggestions(res.data);
+    } catch (err) {
+      console.log(err);
+
+      setSuggestions([]);
+    }
+  };
+
   const handleChange = (e) => {
+    const { name, value } = e.target;
     setFormData((prev) => ({
       ...prev,
-      [e.target.name]: e.target.value,
+      [name]: value,
     }));
+    setActiveField(name); // Track which field is being edited
+    fetchSuggestions(value); // Fetch suggestions for the current input
+    setPalenOpen(true); // Open the suggestion panel
+  };
+
+  // When user clicks a suggestion
+  const handleSuggestionClick = (suggestion) => {
+    if (activeField) {
+      setFormData((prev) => ({
+        ...prev,
+        [activeField]: suggestion.display_name || suggestion,
+      }));
+    }
+    setSuggestions([]);
+    setPalenOpen(false);
   };
 
   useGSAP(() => {
@@ -118,9 +164,60 @@ const Home = () => {
     }
   }, [waitingForDriver]);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("location", formData);
+
+    if (!formData.pickUp || !formData.destination) {
+      alert("Please fill in both pick-up and destination fields.");
+      return;
+    }
+
+    const rideVehicleType = ["car", "auto", "moto"];
+    const allFare = await Promise.all(
+      rideVehicleType.map(async (type) => {
+        const fare = await axios.get(
+          `${import.meta.env.VITE_BASE_URL}/ride/get-fare`,
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+            params: {
+              pickup: formData.pickUp,
+              destination: formData.destination,
+              vehicleType: type,
+            },
+          }
+        );
+        return {
+          [type]: fare.data.fare,
+        };
+      })
+    );
+    setFare(
+      allFare.reduce((acc, curr) => {
+        return { ...acc, ...curr };
+      }, {})
+    );
+
+    setvehiclePanel(true);
+    setPalenOpen(false);
+  };
+
+  const createRide = async (vehicleType) => {
+    const response = await axios.post(
+      `${import.meta.env.VITE_BASE_URL}/ride/create`,
+      {
+        pickup: formData.pickUp,
+        destination: formData.destination,
+        vehicleType,
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      }
+    );
+    console.log("Ride created:", response.data);
   };
 
   return (
@@ -159,6 +256,8 @@ const Home = () => {
             <input
               onClick={() => {
                 setPalenOpen(true);
+                setActiveField("pickUp");
+                fetchSuggestions(formData.pickUp);
               }}
               className="px-12 py-3 outline-amber-300 rounded-lg text-base bg-[#eee] my-2 w-full"
               type="text"
@@ -166,10 +265,13 @@ const Home = () => {
               name="pickUp"
               value={formData.pickUp}
               onChange={handleChange}
+              autoComplete="off"
             />
             <input
               onClick={() => {
                 setPalenOpen(true);
+                setActiveField("destination");
+                fetchSuggestions(formData.destination);
               }}
               className="px-12 py-3 outline-amber-300 rounded-lg text-base bg-[#eee] my-2 w-full"
               type="text"
@@ -177,11 +279,21 @@ const Home = () => {
               placeholder="Enter your destination"
               value={formData.destination}
               onChange={handleChange}
+              autoComplete="off"
             />
+
+            <button
+              type="submit"
+              className="w-full mt-4 py-3 bg-black text-white rounded-lg font-semibold text-lg hover:bg-gray-900 transition-colors"
+            >
+              Find Trip
+            </button>
           </form>
         </div>
         <div ref={palenRef} className="bg-white text-black">
           <LocationSearchPalen
+            suggestions={suggestions}
+            onSuggestionClick={handleSuggestionClick}
             setvehiclePanel={setvehiclePanel}
             setPalenOpen={setPalenOpen}
           />
@@ -193,8 +305,10 @@ const Home = () => {
       >
         <VehiclePanel
           setconfirmRide={setconfirmRide}
+          createRide={createRide}
           downIcon2={downIcon2}
           setvehiclePanel={setvehiclePanel}
+          fare={fare}
         />
       </div>
       <div
