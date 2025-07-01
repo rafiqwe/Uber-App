@@ -43,6 +43,9 @@ async function getFare(pickup, destination, vehicleType) {
   fare = distance * perKm + duration * perMin;
   return fare;
 }
+
+module.exports.getFare = getFare;
+
 const getOtp = (num) => {
   const generateOtp = (num) => {
     const otp = crypto
