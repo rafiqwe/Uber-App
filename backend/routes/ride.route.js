@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const { body } = require("express-validator");
+const { body, query } = require("express-validator");
 const rideController = require("../controllers/ride.controller");
 const authMiddleware = require("../middlewares/auth.middleware");
 router.post(
@@ -20,5 +20,22 @@ router.post(
     .withMessage("Vehicle type must be one of: auto, motorcycle, car"),
   rideController.createRide
 );
+ 
+router.get('/get-fare',
+  authMiddleware.auth,
+  query("pickup")
+    .isString()
+    .isLength({ min: 3 })
+    .withMessage("Pickup location must be at least 3 characters long"),
+  query("destination")
+    .isString()
+    .isLength({ min: 3 })
+    .withMessage("Destination location must be at least 3 characters long"),
+  query("vehicleType")
+    .isString()
+    .isIn(["auto", "moto", "car"])
+    .withMessage("Vehicle type must be one of: auto, motorcycle, car"),
+  rideController.getFare
+)
 
 module.exports = router;
