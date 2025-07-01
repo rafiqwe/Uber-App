@@ -656,3 +656,266 @@ Must include the JWT token in either cookies or `Authorization` header.
 - `authCaptain` middleware validates and attaches the authenticated captain to `req.captain`.
 
 ---
+
+
+
+# 🗺️ Map API Endpoints
+
+These endpoints provide geolocation, route distance/time estimation, and address autocomplete suggestions using Nominatim and OpenRouteService.
+
+All routes are protected — valid JWT token required.
+
+---
+
+## 📍 GET `/map/get-coordinates`
+
+Returns the latitude and longitude of a given address.
+
+### 🔐 Protected  
+✅ Requires Auth Token (cookie or `Authorization: Bearer <token>`)
+
+### 🧾 Query Parameters
+
+| Name    | Type   | Required | Description                   |
+|---------|--------|----------|-------------------------------|
+| address | string | ✅ Yes   | Any valid address (3+ chars)  |
+
+### 🧪 Example
+
+```
+GET /map/get-coordinates?address=Dhaka
+```
+
+### ✅ Success Response
+
+```json
+{
+  "lat": 23.8103,
+  "lng": 90.4125
+}
+```
+
+### ❌ Error Responses
+
+- `400 Bad Request` – If the address is missing or too short.
+- `404 Not Found` – If no coordinates found.
+- `401 Unauthorized` – If token is missing or blacklisted.
+
+---
+
+## 🚗 GET `/map/get-distance-time`
+
+Returns estimated distance and time between two addresses.
+
+### 🔐 Protected  
+✅ Requires Auth Token
+
+### 🧾 Query Parameters
+
+| Name        | Type   | Required | Description                          |
+|-------------|--------|----------|--------------------------------------|
+| origin      | string | ✅ Yes   | Starting address (3+ chars)          |
+| destination | string | ✅ Yes   | Destination address (3+ chars)       |
+
+### 🧪 Example
+
+```
+GET /map/get-distance-time?origin=Dhaka&destination=Chittagong
+```
+
+### ✅ Success Response
+
+```json
+{
+  "distance": "245.12 km",
+  "duration": "340.6 mins"
+}
+```
+
+### ❌ Error Responses
+
+- `400 Bad Request` – If origin or destination is invalid.
+- `500 Internal Server Error` – If distance/time could not be calculated.
+- `401 Unauthorized` – If not authenticated.
+
+---
+
+## ✨ GET `/map/get-suggestions`
+
+Returns autocomplete address suggestions based on user input.
+
+### 🔐 Protected  
+✅ Requires Auth Token
+
+### 🧾 Query Parameters
+
+| Name  | Type   | Required | Description                    |
+|-------|--------|----------|--------------------------------|
+| input | string | ✅ Yes   | Partial address (3+ characters)|
+
+### 🧪 Example
+
+```
+GET /map/get-suggestions?input=Baris
+```
+
+### ✅ Success Response
+
+```json
+[
+  {
+    "display_name": "Barisal, Bangladesh",
+    "lat": "22.7",
+    "lng": "90.3",
+    "type": "city",
+    "class": "place",
+    "address": {
+      "city": "Barisal",
+      "country": "Bangladesh"
+    }
+  },
+  ...
+]
+```
+
+### ❌ Error Responses
+
+- `400 Bad Request` – If input is missing or too short.
+- `500 Internal Server Error` – If fetch fails.
+- `401 Unauthorized` – If not authenticated.
+
+---
+
+### 📌 Notes
+
+- All APIs rely on third-party services:  
+  - [Nominatim OpenStreetMap](https://nominatim.openstreetmap.org/) for address search.
+  - [OpenRouteService](https://openrouteservice.org/) for route calculations.
+- Use an appropriate `User-Agent` when making requests to Nominatim (compliant with their usage policy).
+
+---
+
+**Made for 🚖 Uber Clone – Map Functionality**
+
+
+
+# 🚕 Ride API — Create Ride
+
+This endpoint allows a user to request a ride by providing pickup and destination addresses and selecting a vehicle type. The backend calculates the fare and returns the ride details with a generated OTP.
+
+---
+
+## 📌 Model: Ride
+
+| Field        | Type                     | Required | Description |
+|--------------|--------------------------|----------|-------------|
+| `user`       | ObjectId (User)          | ✅ Yes   | User who requested the ride |
+| `captain`    | ObjectId (Captain)       | ❌ No    | Captain who accepts the ride |
+| `pickup`     | String                   | ✅ Yes   | Starting address |
+| `destination`| String                   | ✅ Yes   | Ending address |
+| `fare`       | Number                   | ✅ Yes   | Calculated based on distance and time |
+| `status`     | Enum                     | ❌ No    | Ride status (default: `pending`) <br> Values: `pending`, `accepted`, `ongoing`, `completed`, `cancelled` |
+| `duration`   | Number                   | ❌ No    | Estimated time (in minutes) |
+| `destance`   | Number                   | ❌ No    | Estimated distance (in kilometers) |
+| `paymentID`  | String (typo: `trype`)   | ❌ No    | Payment identifier (if used) |
+| `orderID`    | String                   | ❌ No    | Order ID from payment gateway |
+| `signature`  | String                   | ❌ No    | Payment signature |
+| `vehicleType`| Enum                     | ✅ Yes   | Options: `auto`, `moto`, `car` |
+| `otp`        | String                   | ✅ Yes   | 6-digit OTP generated for ride (hidden by default) |
+
+---
+
+## 🎯 Endpoint: `POST /ride/create`
+
+Creates a new ride request.
+
+### 🔐 Authentication  
+✅ Requires user token (JWT via cookie or `Authorization` header)
+
+### 🧾 Request Body (JSON)
+
+| Field         | Type   | Required | Validation                              |
+|---------------|--------|----------|------------------------------------------|
+| `pickup`      | String | ✅ Yes   | Minimum 3 characters                     |
+| `destination` | String | ✅ Yes   | Minimum 3 characters                     |
+| `vehicleType` | String | ✅ Yes   | Must be one of: `auto`, `moto`, `car`    |
+
+### 🧪 Example Request
+
+```json
+{
+  "pickup": "Banani, Dhaka",
+  "destination": "Dhanmondi, Dhaka",
+  "vehicleType": "car"
+}
+```
+
+---
+
+### ✅ Success Response
+
+**Status**: `201 Created`
+
+```json
+{
+  "_id": "6658a5ed48f332a4b69346a7",
+  "user": "6658a5db48f332a4b69346a5",
+  "pickup": "Banani, Dhaka",
+  "destination": "Dhanmondi, Dhaka",
+  "fare": "220.00",
+  "status": "pending",
+  "vehicleType": "car",
+  "otp": "******",
+  "__v": 0
+}
+```
+
+> ℹ️ OTP is hidden by default (`select: false` in schema) when fetched from database.
+
+---
+
+### ❌ Error Responses
+
+| Status | Message                               |
+|--------|----------------------------------------|
+| 400    | Validation errors (e.g., short input) |
+| 500    | Internal server error or service issues|
+
+---
+
+## ⚙️ Fare Calculation Logic
+
+Based on distance and duration fetched from OpenRouteService:
+
+| Vehicle   | Per KM | Per Minute |
+|-----------|--------|------------|
+| Auto      | 5      | 0.5        |
+| Moto      | 4      | 0.4        |
+| Car       | 10     | 1.0        |
+
+Formula:
+```
+fare = (distanceInKm * perKm) + (durationInMin * perMin)
+```
+
+---
+
+## 🔐 OTP Generation
+
+A secure 6-digit random OTP is generated using Node.js `crypto.randomInt`:
+
+```js
+getOtp = (num) => crypto.randomInt(10**(num-1), 10**num).toString();
+```
+
+---
+
+## 🚧 Known Issues
+
+- Typo in schema: `trype` ➜ should be `type` in `paymentID`
+- `destance` ➜ should be `distance` for clarity
+
+---
+
+**Developed for**: 🚖 Uber Clone Fullstack Project  
+**Maintained by**: MD Rabbi  
