@@ -1,7 +1,7 @@
 import React from "react";
 import { FaAngleDown, FaUser } from "react-icons/fa";
 
-const VehiclePanel = ({ downIcon2, setvehiclePanel, setconfirmRide }) => {
+const VehiclePanel = ({ downIcon2, setvehiclePanel, setconfirmRide ,fare, createRide}) => {
   return (
     <div>
       <div className="absolute top-7 right-5">
@@ -18,6 +18,7 @@ const VehiclePanel = ({ downIcon2, setvehiclePanel, setconfirmRide }) => {
         onClick={() => {
           setconfirmRide(true);
           setvehiclePanel(false);
+          createRide("car");
         }}
         className="flex active:border-2 border-black bg-gray-100 mb-2 rounded-xl justify-between items-center p-3 w-full"
       >
@@ -36,12 +37,14 @@ const VehiclePanel = ({ downIcon2, setvehiclePanel, setconfirmRide }) => {
           <h2 className="text-sm font-medium">2min away</h2>
           <h2 className="text-xs text-gray-600">affordable, compect rides</h2>
         </div>
-        <h2 className="font-semibold text-lg">192.5 Tk</h2>
+        <h2 className="font-semibold text-lg">{fare.car} Tk</h2>
       </div>
       <div
         onClick={() => {
           setconfirmRide(true);
           setvehiclePanel(false);
+          createRide("auto");
+
         }}
         className="flex active:border-2 border-black bg-gray-100 mb-2 rounded-xl justify-between items-center p-3 w-full"
       >
@@ -60,12 +63,13 @@ const VehiclePanel = ({ downIcon2, setvehiclePanel, setconfirmRide }) => {
           <h2 className="text-sm font-medium">2min away</h2>
           <h2 className="text-xs text-gray-600">affordable, Auto rides</h2>
         </div>
-        <h2 className="font-semibold text-lg">132.5 Tk</h2>
+        <h2 className="font-semibold text-lg">{fare.auto} Tk</h2>
       </div>
       <div
         onClick={() => {
           setconfirmRide(true);
           setvehiclePanel(false);
+          createRide("moto");
         }}
         className="flex active:border-2 border-black bg-gray-100 mb-2 rounded-xl justify-between items-center p-3 w-full"
       >
@@ -84,7 +88,7 @@ const VehiclePanel = ({ downIcon2, setvehiclePanel, setconfirmRide }) => {
           <h2 className="text-sm font-medium">3min away</h2>
           <h2 className="text-xs text-gray-600">affordable, motocycle rides</h2>
         </div>
-        <h2 className="font-semibold text-lg">64.40 Tk</h2>
+        <h2 className="font-semibold text-lg">{fare.moto} Tk</h2>
       </div>
     </div>
   );
