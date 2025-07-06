@@ -60,6 +60,11 @@ function initializeSocket(server) {
       );
     });
 
+    socket.on("location", ({ userId, lat, lng }) => {
+      // Broadcast to the other side (user or captain)
+      socket.broadcast.emit("location-update", { userId, lat, lng });
+    });
+
     // Optionally, handle custom events here
     socket.on("disconnect", () => {
       console.log("Client disconnected:", socket.id);
