@@ -20,8 +20,9 @@ router.post(
     .withMessage("Vehicle type must be one of: auto, motorcycle, car"),
   rideController.createRide
 );
- 
-router.get('/get-fare',
+
+router.get(
+  "/get-fare",
   authMiddleware.auth,
   query("pickup")
     .isString()
@@ -36,6 +37,31 @@ router.get('/get-fare',
     .isIn(["auto", "moto", "car"])
     .withMessage("Vehicle type must be one of: auto, motorcycle, car"),
   rideController.getFare
-)
+);
+
+router.post(
+  "/confirm",
+  authMiddleware.authCaptain,
+  body("rideId").isMongoId().withMessage("Invalid ride ID"),
+  rideController.confirmRide
+);
+
+router.get(
+  "/start-ride",
+  authMiddleware.authCaptain,
+  query("rideId").isMongoId().withMessage("Invalid ride ID"),
+  query("otp")
+    .isString()
+    .isLength({ min: 6, max: 6 })
+    .withMessage("OTP must be 6 characters long"),
+  rideController.startRide
+);
+
+router.post(
+  "/end-ride",
+  authMiddleware.authCaptain,
+  body("rideId").isMongoId().withMessage("Invalid ride ID"),
+  rideController.endRide
+);
 
 module.exports = router;
