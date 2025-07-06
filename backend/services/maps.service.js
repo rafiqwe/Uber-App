@@ -1,4 +1,5 @@
 const axios = require("axios");
+const captainModel = require("../models/captain.model");
 
 module.exports.getAddressCoordinate = async (address) => {
   if (!address) throw new Error("Address is required");
@@ -69,7 +70,7 @@ module.exports.getDistanceTime = async (origin, destination) => {
     );
     throw new Error("Failed to get distance and time");
   }
-};
+};      
 
 module.exports.getAutocompleteSuggestion = async (input) => {
   if (!input) {
@@ -105,4 +106,20 @@ module.exports.getAutocompleteSuggestion = async (input) => {
     console.error("Nominatim autocomplete error:", error.message);
     throw new Error("Failed to fetch autocomplete suggestions");
   }
+};
+
+// map.service.js
+module.exports.getCaptainsInTheRadius = async (lat, lng, radiusInKm) => {
+  const captains = await captainModel.find({
+    location: {
+      $geoWithin: {
+        $centerSphere: [[lng, lat], radiusInKm / 6378.1],
+      },
+    },
+  });
+
+  console.log(
+    `Found ${captains.length} captains within ${radiusInKm} km of (${lat}, ${lng})`
+  );
+  return captains;
 };
