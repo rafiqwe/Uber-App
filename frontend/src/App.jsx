@@ -5,7 +5,6 @@ import UserLogin from "./pages/userLogin";
 import UserRegister from "./pages/userRegister";
 import CaptainLogin from "./pages/captainLogin";
 import CaptainRegister from "./pages/captainRegister";
-import Home from "./pages/home";
 import UserProtectedWraper from "./pages/UserProtectedWraper";
 import UserLogOut from "./pages/UserLogOut";
 import CaptainHome from "./pages/CaptainHome";
@@ -13,6 +12,7 @@ import CaptainProtectedWraper from "./pages/CaptainProtectedWraper";
 import CaptainLogout from "./pages/CaptainLogout";
 import Riding from "./pages/Riding";
 import CaptainRiding from "./pages/CaptainRiding";
+import Home from "./pages/Home";
 const App = () => {
   const router = createBrowserRouter([
     {
@@ -79,7 +79,7 @@ const App = () => {
 
   return (
     <>
-      <div >
+      <div>
         <RouterProvider router={router} />
       </div>
     </>
