@@ -1,7 +1,7 @@
 import axios from "axios";
-import { useState } from "react";
+import { useContext, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-
+import { UserDataContext } from "../context/UserContext";
 const UserLogin = () => {
   const [formData, setFormData] = useState({
     email: "",
@@ -17,6 +17,7 @@ const UserLogin = () => {
     }));
   };
 
+  const { setuser } = useContext(UserDataContext);
   const handleSubmit = async (e) => {
     e.preventDefault();
     console.log("Submitted:", formData);
@@ -29,6 +30,7 @@ const UserLogin = () => {
     if (response.status === 200) {
       const data = response.data;
       localStorage.setItem("token", data.token);
+      setuser(data.user);
       navigate("/home");
     }
 
