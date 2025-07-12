@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
 import { FaAngleDown } from "react-icons/fa";
@@ -8,6 +8,12 @@ import ConfirmRide from "../components/ConfirmRide";
 import LookingForDriver from "../components/LookingForDriver";
 import WaitingForDriver from "../components/WaitingForDriver";
 import axios from "axios"; // <-- Add axios import
+import { SocketContext } from "../context/SocketContext"; // <-- Import SocketContext
+import { useContext } from "react"; // <-- Import useContext
+import { UserDataContext } from "../context/UserContext";
+import { useNavigate } from "react-router-dom";
+import MapComponent from "../components/MapComponent";
+import { LiveTracking } from "../components/LiveTracking";
 
 const Home = () => {
   const [formData, setFormData] = useState({
@@ -18,10 +24,16 @@ const Home = () => {
   const [vehiclePanel, setvehiclePanel] = useState(false);
   const [confirmRide, setconfirmRide] = useState(false);
   const [vehileFound, setvehileFound] = useState(false);
-  const [waitingForDriver, setwaitingForDriver] = useState(true);
+  const [waitingForDriver, setwaitingForDriver] = useState(false);
   const [suggestions, setSuggestions] = useState([]); // <-- Add suggestions state
   const [activeField, setActiveField] = useState(""); // <-- Track which field is active
+  const [rideConfirm, setrideConfirm] = useState(null);
+
   const [fare, setFare] = useState([]);
+  const [confirmFare, setConfirmFare] = useState(null);
+  const [vehicleType, setVehicleType] = useState(null);
+  const { sendMessage, onMessage } = useContext(SocketContext); // <-- Use SocketContext
+  const { user } = useContext(UserDataContext); // <-- Use UserDataContext
 
   const palenRef = useRef(null);
   const downIcon = useRef(null);
@@ -30,6 +42,24 @@ const Home = () => {
   const confirmPanelRef = useRef(null);
   const vehicleFundRef = useRef(null);
   const waitingForDriverRef = useRef(null);
+
+  const navigate = useNavigate();
+  useEffect(() => {
+    sendMessage("join", { userType: "user", userId: user._id });
+    // console.log("User ID:", user._id);
+  }, [user]);
+
+  onMessage("ride-confirmed", (data) => {
+    console.log("New ride confirmed:", data);
+    setrideConfirm(data);
+    setwaitingForDriver(true);
+  });
+
+  onMessage("ride-started", (data) => {
+    console.log("New ride start:", data);
+    setwaitingForDriver(false);
+    navigate("/riding", { state: { ride: data } }); // Pass ride data here
+  });
 
   // Fetch suggestions from backend
   const fetchSuggestions = async (input) => {
@@ -76,7 +106,6 @@ const Home = () => {
       }));
     }
     setSuggestions([]);
-    setPalenOpen(false);
   };
 
   useGSAP(() => {
@@ -164,6 +193,24 @@ const Home = () => {
     }
   }, [waitingForDriver]);
 
+  const confirmFareFuc = async (vehicleType) => {
+    const fare = await axios.get(
+      `${import.meta.env.VITE_BASE_URL}/ride/get-fare`,
+      {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+        params: {
+          pickup: formData.pickUp,
+          destination: formData.destination,
+          vehicleType: vehicleType,
+        },
+      }
+    );
+    setConfirmFare(fare.data.fare);
+    setconfirmRide(true);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -203,7 +250,7 @@ const Home = () => {
     setPalenOpen(false);
   };
 
-  const createRide = async (vehicleType) => {
+  const createRide = async () => {
     const response = await axios.post(
       `${import.meta.env.VITE_BASE_URL}/ride/create`,
       {
@@ -227,19 +274,10 @@ const Home = () => {
         alt="Uber Logo"
         className="w-17 absolute top-5 left-5"
       />
-      <div
-        className="h-screen w-screen"
-        onClick={() => {
-          setvehiclePanel(false);
-        }}
-      >
-        <img
-          className="h-full w-full object-cover"
-          src="https://i2-prod.mylondon.news/article16106961.ece/ALTERNATES/s615/2_Uber-pink-cars.jpg"
-          alt=""
-        />
+      <div className="h-screen w-screen">
+        <MapComponent className="w-full " />
       </div>
-      <div className="absolute top-0 flex flex-col justify-end h-screen transition-all">
+      <div className=" z-10 absolute top-0 flex flex-col justify-end h-screen transition-all">
         <div className="bg-white h-[30%] w-full p-5  relative">
           <div className="absolute top-7 right-5">
             <FaAngleDown
@@ -252,7 +290,7 @@ const Home = () => {
           </div>
           <h1 className="text-2xl font-semibold mb-3">Find to trip</h1>
           <form className="relative" onSubmit={handleSubmit}>
-            <div className="line w-1 h-17 bg-gray-500 rounded-full absolute top-[26%] left-7"></div>
+            <div className="line w-1 h-17 bg-gray-500 rounded-full absolute top-7 left-7"></div>
             <input
               onClick={() => {
                 setPalenOpen(true);
@@ -305,10 +343,11 @@ const Home = () => {
       >
         <VehiclePanel
           setconfirmRide={setconfirmRide}
-          createRide={createRide}
+          setVehicleType={setVehicleType}
           downIcon2={downIcon2}
           setvehiclePanel={setvehiclePanel}
           fare={fare}
+          confirmFareFuc={confirmFareFuc}
         />
       </div>
       <div
@@ -316,9 +355,14 @@ const Home = () => {
         className="fixed z-10  bottom-0 rounded-t-3xl  translate-y-full bg-white px-3 py-6 w-full"
       >
         <ConfirmRide
+          fare={fare}
+          pickup={formData.pickUp}
+          destination={formData.destination}
+          createRide={createRide}
           setconfirmRide={setconfirmRide}
           setvehileFound={setvehileFound}
           downIcon2={downIcon2}
+          confirmFare={confirmFare}
         />
       </div>
 
@@ -327,8 +371,11 @@ const Home = () => {
         className="fixed z-10  bottom-0 translate-y-full rounded-t-3xl  bg-white px-3 py-6 w-full"
       >
         <LookingForDriver
+          pickup={formData.pickUp}
+          destination={formData.destination}
           downIcon2={downIcon2}
           setvehileFound={setvehileFound}
+          confirmFare={confirmFare}
         />
       </div>
       <div
@@ -336,6 +383,7 @@ const Home = () => {
         className="fixed z-10  bottom-0 rounded-t-3xl  bg-white px-3 py-8 w-full "
       >
         <WaitingForDriver
+          rideConfirm={rideConfirm}
           setwaitingForDriver={setwaitingForDriver}
           downIcon2={downIcon2}
         />
