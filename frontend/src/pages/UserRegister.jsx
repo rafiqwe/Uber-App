@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useContext, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
+import { UserDataContext } from "../context/UserContext";
 
 const UserRegister = () => {
   const [formData, setFormData] = useState({
@@ -17,6 +18,7 @@ const UserRegister = () => {
     }));
   };
   const navigate = useNavigate();
+  const { setuser } = useContext(UserDataContext);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -40,6 +42,7 @@ const UserRegister = () => {
     if (response.status === 201) {
       const data = response.data;
       localStorage.setItem("token", data.token);
+      setuser(data.user);
       navigate("/home");
     }
 
