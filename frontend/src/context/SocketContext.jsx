@@ -2,33 +2,45 @@
 import { createContext, useContext, useEffect, useRef, useState } from "react";
 import { io } from "socket.io-client";
 
+// Create the context
 export const SocketContext = createContext();
+
+// Custom hook to use the context
 export const useSocket = () => useContext(SocketContext);
 
+// Set the backend WebSocket server URL
 const SOCKET_URL = import.meta.env.VITE_BASE_URL || "http://localhost:4000";
 
 const SocketProvider = ({ children }) => {
   const socketRef = useRef(null);
+  const [socket, setSocket] = useState(null); // reactive socket
   const [isConnected, setIsConnected] = useState(false);
 
   useEffect(() => {
-    socketRef.current = io(SOCKET_URL, {
+    const newSocket = io(SOCKET_URL, {
       transports: ["websocket"],
       withCredentials: true,
     });
 
-    socketRef.current.on("connect", () => {
-      console.log("✅ Socket connected:", socketRef.current.id);
+    socketRef.current = newSocket;
+    setSocket(newSocket);
+
+    newSocket.on("connect", () => {
+      console.log("✅ Socket connected:", newSocket.id);
       setIsConnected(true);
     });
 
-    socketRef.current.on("disconnect", () => {
+    newSocket.on("disconnect", () => {
       console.log("❌ Socket disconnected");
       setIsConnected(false);
     });
 
+    newSocket.on("connect_error", (err) => {
+      console.error("❌ Socket connection failed:", err.message);
+    });
+
     return () => {
-      socketRef.current.disconnect();
+      newSocket.disconnect();
     };
   }, []);
 
@@ -53,12 +65,13 @@ const SocketProvider = ({ children }) => {
   return (
     <SocketContext.Provider
       value={{
-        socket: socketRef.current,
+        socket,
         isConnected,
         sendMessage,
         onMessage,
       }}
     >
+      {/* Optionally delay rendering until socket is ready */}
       {children}
     </SocketContext.Provider>
   );
