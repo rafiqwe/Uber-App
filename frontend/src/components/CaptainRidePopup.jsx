@@ -1,7 +1,12 @@
 import { FaAngleDown, FaLocationDot, FaMapLocationDot } from "react-icons/fa6";
 import { RiCurrencyLine } from "react-icons/ri";
 
-const CaptainRidePopup = ({ setridePopupPanel, setConfirmRidePopupPanel }) => {
+const CaptainRidePopup = ({
+  setridePopupPanel,
+  setConfirmRidePopupPanel,
+  ride,
+  confirm,
+}) => {
   return (
     <div>
       <div className="absolute top-7 right-5">
@@ -21,11 +26,15 @@ const CaptainRidePopup = ({ setridePopupPanel, setConfirmRidePopupPanel }) => {
             src="https://static.vecteezy.com/system/resources/previews/041/642/170/non_2x/ai-generated-portrait-of-handsome-smiling-young-man-with-folded-arms-isolated-free-png.png"
             alt=""
           />
-          <h2 className="text-lg font-semibold">Muhammad Rabbi</h2>
+          <h2 className="text-lg font-semibold">
+            {ride?.user?.fullname?.firstname +
+              " " +
+              ride?.user?.fullname?.lastname}
+          </h2>
         </div>
         <div>
-          <h4 className="text-xl font-semibold ">2.8 KM</h4>
-          <p className="text-md font-medium text-gray-700">40 Tk</p>
+          {/* <h4 className="text-xl font-semibold "></h4> */}
+          <p className="text-md font-medium text-gray-700">{ride?.fare} Tk</p>
         </div>
       </div>
       <div className="flex justify-center items-center gap-2 flex-col ">
@@ -36,9 +45,7 @@ const CaptainRidePopup = ({ setridePopupPanel, setConfirmRidePopupPanel }) => {
             </div>
             <div>
               <h2 className="font-semibold text-lg">542/42-R</h2>
-              <h2 className="text-gray-500 text-sm">
-                North Mawna sheepur, Gazipur
-              </h2>
+              <h2 className="text-gray-500 text-sm">{ride?.pickup}</h2>
             </div>
           </div>
           <div className="flex mb-3 items-center gap-4 w-full p-2">
@@ -47,9 +54,7 @@ const CaptainRidePopup = ({ setridePopupPanel, setConfirmRidePopupPanel }) => {
             </div>
             <div>
               <h2 className="font-semibold text-lg">542/42-R</h2>
-              <h2 className="text-gray-500 text-sm">
-                North Mawna sheepur, Gazipur
-              </h2>
+              <h2 className="text-gray-500 text-sm">{ride?.destination}</h2>
             </div>
           </div>
         </div>
@@ -65,7 +70,7 @@ const CaptainRidePopup = ({ setridePopupPanel, setConfirmRidePopupPanel }) => {
           <button
             onClick={() => {
               setConfirmRidePopupPanel(true);
-              setridePopupPanel(false);
+              confirm()
             }}
             className="w-full py-2 rounded-lg bg-green-600 text-lg font-semibold text-white"
           >
