@@ -1,8 +1,11 @@
 import axios from "axios";
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-
+import { CaptainDataContext } from "../context/CaptainContext";
+import { useContext } from "react";
 const CaptainLogin = () => {
+
+
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -14,6 +17,8 @@ const CaptainLogin = () => {
       [e.target.name]: e.target.value,
     }));
   };
+
+  const { setCaptain, setLoading } = useContext(CaptainDataContext);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -27,6 +32,8 @@ const CaptainLogin = () => {
     if (response.status === 200) {
       const data = response.data;
       localStorage.setItem("token", data.token);
+      setCaptain(data.captain);
+      setLoading(false);
       navigate("/captain-home");
     }
 
