@@ -1,8 +1,12 @@
-import React from "react";
+import React, { useContext } from "react";
 import { MdOutlineAvTimer } from "react-icons/md";
 import { IoMdSpeedometer } from "react-icons/io";
 import { PiNotePencilBold } from "react-icons/pi";
+import { CaptainDataContext } from "../context/CaptainContext";
+
 const CaptainDetails = () => {
+  const { captain } = useContext(CaptainDataContext);
+  
   return (
     <div>
       <div className="flex items-center justify-between pt-2 px-2">
@@ -12,7 +16,7 @@ const CaptainDetails = () => {
             src="https://static.vecteezy.com/system/resources/previews/041/642/170/non_2x/ai-generated-portrait-of-handsome-smiling-young-man-with-folded-arms-isolated-free-png.png"
             alt=""
           />
-          <h2 className="text-lg font-semibold">Muhammad Rabbi</h2>
+          <h2 className="text-lg font-semibold capitalize">{captain?.fullname.firstname + " " + captain?.fullname.lastname } </h2>
         </div>
         <div>
           <h4 className="text-xl font-semibold ">320.10</h4>
