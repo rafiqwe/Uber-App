@@ -4,7 +4,13 @@ import { FaAngleDown } from "react-icons/fa";
 import { FaLocationDot, FaMapLocationDot } from "react-icons/fa6";
 import { RiCurrencyLine } from "react-icons/ri";
 
-const LookingForDriver = ({ setvehileFound, downIcon2 }) => {
+const LookingForDriver = ({
+  setvehileFound,
+  downIcon2,
+  pickup,
+  destination,
+  confirmFare,
+}) => {
   return (
     <div>
       <div className="absolute top-7 right-5">
@@ -33,7 +39,7 @@ const LookingForDriver = ({ setvehileFound, downIcon2 }) => {
             <div>
               <h2 className="font-semibold text-lg">542/42-R</h2>
               <h2 className="text-gray-500 text-sm">
-                North Mawna sheepur, Gazipur
+               {pickup || "North Mawna sheepur, Gazipur"}
               </h2>
             </div>
           </div>
@@ -44,7 +50,7 @@ const LookingForDriver = ({ setvehileFound, downIcon2 }) => {
             <div>
               <h2 className="font-semibold text-lg">542/42-R</h2>
               <h2 className="text-gray-500 text-sm">
-                North Mawna sheepur, Gazipur
+               {destination || "North Mawna sheepur, Gazipur"}
               </h2>
             </div>
           </div>
@@ -53,7 +59,7 @@ const LookingForDriver = ({ setvehileFound, downIcon2 }) => {
               <RiCurrencyLine className="text-xl" />
             </div>
             <div>
-              <h2 className="font-semibold text-lg">192.30 Tk</h2>
+              <h2 className="font-semibold text-lg">{confirmFare} Tk</h2>
               <h2 className="text-gray-500 text-sm">Cash Cash</h2>
             </div>
           </div>
