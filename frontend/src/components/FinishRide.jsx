@@ -1,7 +1,31 @@
+import axios from "axios";
 import { FaAngleDown, FaLocationDot, FaMapLocationDot } from "react-icons/fa6";
-import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
-const FinishRide = ({setfinishRide}) => {
+const FinishRide = ({ setfinishRide, ride }) => {
+  const navigate = useNavigate();
+  const handleFinishRide = async (e) => {
+    e.preventDefault();
+    try {
+      const response = await axios.post(
+        `${import.meta.env.VITE_BASE_URL}/ride/end-ride`,
+        {
+          rideId: ride._id,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
+      );
+      if (response.status === 200) {
+        navigate("/captain-home");
+      }
+    } catch (err) {
+      console.log("Error finishing ride:", err);
+    }
+  };
+
   return (
     <div>
       <div className="flex items-center justify-center -mt-4 mb-4">
@@ -12,7 +36,7 @@ const FinishRide = ({setfinishRide}) => {
           className="text-lg"
         />
       </div>
-      <h1 className="text-2xl font-bold mb-8">Finish this Ride  </h1>
+      <h1 className="text-2xl font-bold mb-8">Finish this Ride </h1>
 
       <div className="flex items-center justify-between  mb-4 p-3 border-2 border-yellow-500 rounded-lg">
         <div className="flex items-center justify-start gap-3 ">
@@ -21,11 +45,14 @@ const FinishRide = ({setfinishRide}) => {
             src="https://static.vecteezy.com/system/resources/previews/041/642/170/non_2x/ai-generated-portrait-of-handsome-smiling-young-man-with-folded-arms-isolated-free-png.png"
             alt=""
           />
-          <h2 className="text-lg font-semibold">Muhammad Rabbi</h2>
+          <h2 className="text-lg font-semibold">
+            {ride?.user?.fullname?.firstname +
+              " " +
+              ride?.user?.fullname?.lastname}
+          </h2>
         </div>
         <div>
-          <h4 className="text-xl font-semibold ">2.8 KM</h4>
-          <p className="text-md font-medium text-gray-700">40 Tk</p>
+          <p className="text-md font-medium text-gray-700">{ride?.fare} Tk</p>
         </div>
       </div>
       <div className="flex justify-center items-center gap-2 mt-10 flex-col ">
@@ -36,9 +63,7 @@ const FinishRide = ({setfinishRide}) => {
             </div>
             <div>
               <h2 className="font-semibold text-lg">542/42-R</h2>
-              <h2 className="text-gray-500 text-sm">
-                North Mawna sheepur, Gazipur
-              </h2>
+              <h2 className="text-gray-500 text-sm">{ride?.pickup}</h2>
             </div>
           </div>
           <div className="flex mb-3 items-center gap-4 w-full p-2">
@@ -47,20 +72,20 @@ const FinishRide = ({setfinishRide}) => {
             </div>
             <div>
               <h2 className="font-semibold text-lg">542/42-R</h2>
-              <h2 className="text-gray-500 text-sm">
-                North Mawna sheepur, Gazipur
-              </h2>
+              <h2 className="text-gray-500 text-sm">{ride?.destination}</h2>
             </div>
           </div>
         </div>
         <div className=" w-full mt-10">
-          <Link
-            to={"/captain-home"}
+          <button
+            onClick={handleFinishRide}
             className="w-full flex justify-center items-center py-3 mt-1 rounded-lg bg-green-600 text-lg font-semibold text-white"
           >
             Finish Ride
-          </Link>
-          <p className="text-red-500 mt-7 text-xs">Click on finish button ride if you have complated the payment </p>
+          </button>
+          <p className="text-red-500 mt-7 text-xs">
+            Click on finish button ride if you have complated the payment{" "}
+          </p>
         </div>
       </div>
     </div>
