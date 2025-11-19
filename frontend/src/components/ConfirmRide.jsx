@@ -3,7 +3,15 @@ import { FaAngleDown, FaUser } from "react-icons/fa";
 import { FaLocationDot, FaMapLocationDot } from "react-icons/fa6";
 import { RiCurrencyLine } from "react-icons/ri";
 
-const ConfirmRide = ({ setconfirmRide, downIcon2, setvehileFound }) => {
+const ConfirmRide = ({
+  setconfirmRide,
+  downIcon2,
+  setvehileFound,
+  pickup,
+  destination,
+  confirmFare,
+  createRide,
+}) => {
   return (
     <div>
       <div className="absolute top-7 right-5">
@@ -32,7 +40,7 @@ const ConfirmRide = ({ setconfirmRide, downIcon2, setvehileFound }) => {
             <div>
               <h2 className="font-semibold text-lg">542/42-R</h2>
               <h2 className="text-gray-500 text-sm">
-                North Mawna sheepur, Gazipur
+                {pickup || "North Mawna sheepur, Gazipur"}
               </h2>
             </div>
           </div>
@@ -43,7 +51,7 @@ const ConfirmRide = ({ setconfirmRide, downIcon2, setvehileFound }) => {
             <div>
               <h2 className="font-semibold text-lg">542/42-R</h2>
               <h2 className="text-gray-500 text-sm">
-                North Mawna sheepur, Gazipur
+                {destination || "North Mawna sheepur, Gazipur"}
               </h2>
             </div>
           </div>
@@ -52,7 +60,7 @@ const ConfirmRide = ({ setconfirmRide, downIcon2, setvehileFound }) => {
               <RiCurrencyLine className="text-xl" />
             </div>
             <div>
-              <h2 className="font-semibold text-lg">192.30 Tk</h2>
+              <h2 className="font-semibold text-lg">{confirmFare} Tk</h2>
               <h2 className="text-gray-500 text-sm">Cash Cash</h2>
             </div>
           </div>
@@ -61,6 +69,7 @@ const ConfirmRide = ({ setconfirmRide, downIcon2, setvehileFound }) => {
           onClick={() => {
             setvehileFound(true);
             setconfirmRide(false);
+            createRide();
           }}
           className="w-full py-2 mt-1 rounded-3xl bg-green-600 text-lg font-semibold text-white"
         >
