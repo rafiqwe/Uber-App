@@ -1,7 +1,14 @@
 import React from "react";
 import { FaAngleDown, FaUser } from "react-icons/fa";
 
-const VehiclePanel = ({ downIcon2, setvehiclePanel, setconfirmRide ,fare, createRide}) => {
+const VehiclePanel = ({
+  downIcon2,
+  setvehiclePanel,
+  setconfirmRide,
+  fare,
+  setVehicleType,
+  confirmFareFuc,
+}) => {
   return (
     <div>
       <div className="absolute top-7 right-5">
@@ -18,7 +25,8 @@ const VehiclePanel = ({ downIcon2, setvehiclePanel, setconfirmRide ,fare, create
         onClick={() => {
           setconfirmRide(true);
           setvehiclePanel(false);
-          createRide("car");
+          setVehicleType("car");
+          confirmFareFuc("car");
         }}
         className="flex active:border-2 border-black bg-gray-100 mb-2 rounded-xl justify-between items-center p-3 w-full"
       >
@@ -43,8 +51,8 @@ const VehiclePanel = ({ downIcon2, setvehiclePanel, setconfirmRide ,fare, create
         onClick={() => {
           setconfirmRide(true);
           setvehiclePanel(false);
-          createRide("auto");
-
+          setVehicleType("auto");
+          confirmFareFuc("auto");
         }}
         className="flex active:border-2 border-black bg-gray-100 mb-2 rounded-xl justify-between items-center p-3 w-full"
       >
@@ -69,7 +77,8 @@ const VehiclePanel = ({ downIcon2, setvehiclePanel, setconfirmRide ,fare, create
         onClick={() => {
           setconfirmRide(true);
           setvehiclePanel(false);
-          createRide("moto");
+          setVehicleType("moto");
+          confirmFareFuc("moto");
         }}
         className="flex active:border-2 border-black bg-gray-100 mb-2 rounded-xl justify-between items-center p-3 w-full"
       >
